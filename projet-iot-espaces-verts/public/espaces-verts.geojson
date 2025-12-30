@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Parc Central Oujda",
+        "description": "Principal espace vert de la ville",
+        "surface": "15000 m²"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-1.9115, 34.6795],
+          [-1.9080, 34.6795],
+          [-1.9080, 34.6835],
+          [-1.9115, 34.6835],
+          [-1.9115, 34.6795]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Jardin Municipal",
+        "description": "Jardin public avec aires de jeux"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-1.9125, 34.6785],
+          [-1.9100, 34.6785],
+          [-1.9100, 34.6805],
+          [-1.9125, 34.6805],
+          [-1.9125, 34.6785]
+        ]]
+      }
+    }
+  ]
+}
