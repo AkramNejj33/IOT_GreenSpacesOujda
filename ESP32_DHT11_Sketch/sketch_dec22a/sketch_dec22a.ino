@@ -8,8 +8,7 @@ const char* ssid = "inwi Home 4GA72201";           // Remplace par ton WiFi
 const char* password = "40509937";    // Remplace par ton mot de passe
 
 // ========== CONFIGURATION SERVEUR ==========
-const char* serverURL = "http://192.168.1.9:5137/api/sensors/data";
-// Remplace 192.168.1.100 par l'IP de ta machine (voir étape 6)
+const char* serverURL = "http://192.168.8.103:5137/api/sensors/data";
 
 // ========== CONFIGURATION DHT11 ==========
 #define DHTPIN 4        // GPIO 4

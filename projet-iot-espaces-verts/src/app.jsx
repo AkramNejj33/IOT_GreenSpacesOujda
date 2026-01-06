@@ -1,12 +1,36 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MapPin, Droplets, Thermometer, Wind, Activity, AlertCircle, TrendingUp, TrendingDown, Database } from 'lucide-react';
+import { MapPin, Droplets, Thermometer, Wind, Activity, AlertCircle } from 'lucide-react';
 
-// Données simulées pour les capteurs VIRTUELS
+// Données simulées pour les capteurs VIRTUELS avec nouvelles coordonnées
 const generateVirtualSensorData = () => {
   const sensors = [
-    { id: 'ESP32_002', name: 'Parc Central - Zone B', lat: 34.6820, lng: -1.9090, active: true, virtual: true },
-    { id: 'ESP32_003', name: 'Jardin Municipal', lat: 34.6795, lng: -1.9115, active: true, virtual: true },
-    { id: 'ESP32_004', name: 'Espace Vert Résidentiel', lat: 34.6835, lng: -1.9080, active: false, virtual: true }
+    { 
+      id: 'ESP32_002', 
+      name: 'Parc Central - Zone B', 
+      lat: 34.6736, 
+      lng: -1.9077, 
+      active: true, 
+      virtual: true,
+      coords: "34°40'25.0\"N 1°54'27.8\"W"
+    },
+    { 
+      id: 'ESP32_003', 
+      name: 'Jardin Municipal', 
+      lat: 34.6773, 
+      lng: -1.9150, 
+      active: true, 
+      virtual: true,
+      coords: "34°40'38.3\"N 1°54'53.8\"W"
+    },
+    { 
+      id: 'ESP32_004', 
+      name: 'Espace Vert Résidentiel', 
+      lat: 34.6750, 
+      lng: -1.9110, 
+      active: false, 
+      virtual: true,
+      coords: "34°40'30.0\"N 1°54'39.6\"W"
+    }
   ];
 
   return sensors.map(sensor => ({
@@ -27,6 +51,7 @@ const App = () => {
       name: 'Parc Central - Zone A (RÉEL)',
       lat: 34.6807,
       lng: -1.9102,
+      coords: "34°40'50.5\"N 1°54'36.7\"W",
       active: true,
       virtual: false,
       temperature: 25.0,
@@ -43,9 +68,9 @@ const App = () => {
   const [apiStatus, setApiStatus] = useState('disconnected');
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
-  const apiURL = 'http://localhost:5137';
+  const apiURL = 'http://192.168.8.103:5137';
 
-  // ========== MISE À JOUR DES DONNÉES RÉELLES ==========
+  // Mise à jour des données réelles
   useEffect(() => {
     const fetchRealSensorData = async () => {
       try {
@@ -53,8 +78,6 @@ const App = () => {
         if (!response.ok) throw new Error('API non disponible');
         
         const latestData = await response.json();
-
-        // Trouver les données du capteur réel (ESP32_001)
         const realSensorData = latestData.find(d => d.sensorId === 'ESP32_001');
 
         if (realSensorData) {
@@ -82,19 +105,15 @@ const App = () => {
       }
     };
 
-    // Récupérer immédiatement
     fetchRealSensorData();
-
-    // Puis toutes les 5 secondes (même intervalle que l'ESP32)
     const realInterval = setInterval(fetchRealSensorData, 5000);
 
-    // Simuler les capteurs virtuels toutes les 5 secondes
     const virtualInterval = setInterval(() => {
       setSensors(prevSensors => {
         const virtualSensorsUpdated = generateVirtualSensorData();
         return [
-          prevSensors[0], // Garder le capteur réel
-          ...virtualSensorsUpdated // Mettre à jour les virtuels
+          prevSensors[0],
+          ...virtualSensorsUpdated
         ];
       });
     }, 5000);
@@ -122,7 +141,7 @@ const App = () => {
 
   const initMap = () => {
     if (mapRef.current && window.L && !mapInstanceRef.current) {
-      const map = window.L.map(mapRef.current).setView([34.6807, -1.9102], 14);
+      const map = window.L.map(mapRef.current).setView([34.6750, -1.9115], 14);
       
       window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
@@ -137,7 +156,7 @@ const App = () => {
           iconSize: [30, 30]
         });
 
-        const marker = window.L.marker([sensor.lat, sensor.lng], { icon })
+        window.L.marker([sensor.lat, sensor.lng], { icon })
           .addTo(map)
           .bindPopup(`
             <div style="font-family: system-ui, -apple-system, sans-serif;">
@@ -145,6 +164,7 @@ const App = () => {
               ${!sensor.virtual ? '<span style="color: #FFD700; font-weight: bold;"> [RÉEL]</span>' : ''}
               <br/>
               <span style="color: #666; font-size: 12px;">ID: ${sensor.id}</span><br/>
+              <span style="color: #666; font-size: 11px;">📍 ${sensor.coords}</span><br/>
               <div style="margin-top: 8px; font-size: 13px;">
                 <div>🌡️ Température: ${sensor.temperature}°C</div>
                 <div>💧 Humidité sol: ${sensor.soilMoisture}%</div>
@@ -230,7 +250,7 @@ const App = () => {
               }`}>
                 <div className={`w-3 h-3 rounded-full ${apiStatus === 'connected' ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
                 <span className={`text-sm font-medium ${apiStatus === 'connected' ? 'text-green-800' : 'text-red-800'}`}>
-                  {apiStatus === 'connected' ? 'API Connectée' : 'Mode Simulé'}
+                  {apiStatus === 'connected' ? 'API Connectée ✅' : 'Mode Simulé'}
                 </span>
               </div>
             </div>
@@ -387,7 +407,7 @@ const App = () => {
               </div>
             </div>
 
-            {/* Alertes et recommandations */}
+            {/* Alertes */}
             <div className="bg-white rounded-xl shadow-lg p-6">
               <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
                 <AlertCircle className="mr-2 text-yellow-500" size={20} />
@@ -432,23 +452,20 @@ const App = () => {
                   <MapPin className="mr-2 text-green-500" size={20} />
                   Carte Interactive des Espaces Verts
                 </h3>
-                <div>
-                  <label className="bg-green-500 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-green-600 transition-colors">
-                    📁 Importer GeoJSON
-                    <input
-                      type="file"
-                      accept=".geojson,.json"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
+                <label className="bg-green-500 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-green-600 transition-colors">
+                  📁 Importer GeoJSON
+                  <input
+                    type="file"
+                    accept=".geojson,.json"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                </label>
               </div>
               
               <div 
                 ref={mapRef} 
-                className="w-full h-[600px] rounded-lg border-2 border-gray-200"
-                style={{ zIndex: 1 }}
+                className="w-full h-96 rounded-lg border-2 border-gray-200"
               ></div>
 
               <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -496,6 +513,11 @@ const App = () => {
                       <span className="text-xs bg-gray-100 px-2 py-1 rounded">{sensor.id}</span>
                     </div>
 
+                    <div className="text-xs text-gray-500 mb-3 flex items-center">
+                      <MapPin size={14} className="mr-1" />
+                      {sensor.coords}
+                    </div>
+
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-gray-600 flex items-center">
@@ -538,28 +560,36 @@ const App = () => {
                   <h3 className="text-lg font-bold text-gray-800">Détails - {selectedSensor.name}</h3>
                   <button 
                     onClick={() => setSelectedSensor(null)}
-                    className="text-gray-500 hover:text-gray-700"
+                    className="text-gray-500 hover:text-gray-700 text-xl"
                   >
                     ✕
                   </button>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                   <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-4">
                     <Thermometer className="text-orange-500 mb-2" size={24} />
                     <p className="text-sm text-gray-600">Température</p>
                     <p className="text-2xl font-bold text-gray-800">{selectedSensor.temperature}°C</p>
-                    <p className="text-xs text-gray-500 mt-1">Plage normale: 15-35°C</p>
+                    <p className="text-xs text-gray-500 mt-1">Plage: 15-35°C</p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 rounded-lg p-4">
+                    <Droplets className="text-cyan-500 mb-2" size={24} />
+                    <p className="text-sm text-gray-600">Humidité Sol</p>
+                    <p className="text-2xl font-bold text-gray-800">{selectedSensor.soilMoisture}%</p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4">
+                    <Wind className="text-green-500 mb-2" size={24} />
+                    <p className="text-sm text-gray-600">Humidité Air</p>
+                    <p className="text-2xl font-bold text-gray-800">{selectedSensor.airHumidity}%</p>
                   </div>
                 </div>
 
-                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                  <h4 className="font-bold text-gray-800 mb-2">Informations Techniques</h4>
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-bold text-gray-800 mb-3">Informations Techniques</h4>
                   <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <span className="text-gray-600">ID Capteur:</span>
-                      <span className="ml-2 font-medium">{selectedSensor.id}</span>
-                    </div>
                     <div>
                       <span className="text-gray-600">Type:</span>
                       <span className="ml-2 font-medium">{selectedSensor.virtual ? 'Virtuel' : 'Réel (DHT11)'}</span>
@@ -572,11 +602,15 @@ const App = () => {
                     </div>
                     <div>
                       <span className="text-gray-600">Position:</span>
-                      <span className="ml-2 font-medium">{selectedSensor.lat.toFixed(4)}, {selectedSensor.lng.toFixed(4)}</span>
+                      <span className="ml-2 font-medium text-xs">{selectedSensor.lat.toFixed(4)}, {selectedSensor.lng.toFixed(4)}</span>
                     </div>
                     <div>
                       <span className="text-gray-600">Batterie:</span>
                       <span className="ml-2 font-medium">{selectedSensor.battery}%</span>
+                    </div>
+                    <div className="col-span-2">
+                      <span className="text-gray-600">Coordonnées GPS:</span>
+                      <span className="ml-2 font-medium text-xs">{selectedSensor.coords}</span>
                     </div>
                     <div className="col-span-2">
                       <span className="text-gray-600">Dernière mise à jour:</span>
@@ -589,8 +623,6 @@ const App = () => {
           </div>
         )}
       </main>
-
-     
     </div>
   );
 };

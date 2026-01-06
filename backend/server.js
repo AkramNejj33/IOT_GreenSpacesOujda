@@ -176,11 +176,14 @@ app.get('/api/health', (req, res) => {
 
 // ========== DÉMARRER LE SERVEUR ==========
 const PORT = process.env.PORT || 5137;
-app.listen(PORT, () => {
+const HOST = '0.0.0.0'; // 🔧 IMPORTANT: Écouter sur TOUTES les interfaces réseau
+
+app.listen(PORT, HOST, () => {
   console.log(`
 ╔════════════════════════════════════════╗
 ║   Serveur IoT en cours d'exécution     ║
-║   http://localhost:${PORT}             ║
+║   🌐 http://0.0.0.0:${PORT}            ║
+║   📍 http://192.168.8.103:${PORT}      ║
 ║   Mode: STREAMING                      ║
 ║   Endpoint: /api/sensors/data          ║
 ║   Stream: /api/sensors/stream (SSE)    ║
